@@ -570,12 +570,12 @@ function mybbsmartlinks_admin()
 		$page->output_nav_tabs($sub_tabs, "smartlinks");
 
 		$table = new Table;
-		$table->construct_header($lang->smartlink, array('width' => 25%));
-		$table->construct_header($lang->smartlink_url, array('width' => 30%));
-		$table->construct_header($lang->smartlink_title, array('width' => 25%));
-		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => 7%));
-		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => 7%));
-		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => 6%));
+		$table->construct_header($lang->smartlink, array('width' => '25%'));
+		$table->construct_header($lang->smartlink_url, array('width' => '30%'));
+		$table->construct_header($lang->smartlink_title, array('width' => '25%'));
+		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => '7%'));
+		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => '7%'));
+		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => '6%'));
 
 		$query = $db->simple_select("smartlinks", "*", "", array("order_by" => "word", "order_dir" => "asc"));
 		while($smartlink = $db->fetch_array($query))
