@@ -570,12 +570,12 @@ function mybbsmartlinks_admin()
 		$page->output_nav_tabs($sub_tabs, "smartlinks");
 
 		$table = new Table;
-		$table->construct_header($lang->smartlink, array('width' => 250));
-		$table->construct_header($lang->smartlink_url, array('width' => 600));
-		$table->construct_header($lang->smartlink_title);
-		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => 100));
-		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => 100));
-		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => 100));
+		$table->construct_header($lang->smartlink, array('width' => 25%));
+		$table->construct_header($lang->smartlink_url, array('width' => 30%));
+		$table->construct_header($lang->smartlink_title, array('width' => 25%));
+		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => 7%));
+		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => 7%));
+		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => 6%));
 
 		$query = $db->simple_select("smartlinks", "*", "", array("order_by" => "word", "order_dir" => "asc"));
 		while($smartlink = $db->fetch_array($query))
@@ -595,8 +595,8 @@ function mybbsmartlinks_admin()
 			$table->construct_cell($smartlink['word']);
 			$table->construct_cell($smartlink['url'], array('style' => 'word-break: break-all;'));
 			$table->construct_cell($url_title, array('style' => 'word-break: break-all;'));
-			$table->construct_cell($nofollow_status, array('class' => 'align_center', 'width' => 50));
-			$table->construct_cell($newtab_status, array('class' => 'align_center', 'width' => 50));
+			$table->construct_cell($nofollow_status, array('class' => 'align_center'));
+			$table->construct_cell($newtab_status, array('class' => 'align_center'));
 			$popup = new PopupMenu("smartlinks_{$smartlink['slid']}", $lang->options);
 			$popup->add_item($lang->smartlink_edit_option, "index.php?module=config-mybbsmartlinks&amp;action=edit&amp;slid={$smartlink['slid']}");
 			$popup->add_item($lang->smartlink_delete_option, "index.php?module=config-mybbsmartlinks&amp;action=delete&amp;slid={$smartlink['slid']}&amp;my_post_key={$mybb->post_code}", "return AdminCP.deleteConfirmation(this, '{$lang->confirm_smartlink_deletion}')");
@@ -606,7 +606,7 @@ function mybbsmartlinks_admin()
 
 		if($table->num_rows() == 0)
 		{
-			$table->construct_cell($lang->no_smartlinks, array("colspan" => 4));
+			$table->construct_cell($lang->no_smartlinks, array("colspan" => 6));
 			$table->construct_row();
 		}
 
