@@ -41,13 +41,13 @@ function mybbsmartlinks_info()
 	$lang->load("config_mybbsmartlinks");
 	
 	return array(
-		"name"			=>	$db->escape_string($lang->mybbsmartlinks_info_name),
+		"name"		=>	$db->escape_string($lang->mybbsmartlinks_info_name),
 		"description"	=>	$db->escape_string($lang->mybbsmartlinks_info_description),
-		"website"		=>	"https://github.com/SvePu/MyBB-SmartLinks",
-		"author"		=>	"SvePu",
+		"website"	=>	"https://github.com/SvePu/MyBB-SmartLinks",
+		"author"	=>	"SvePu",
 		"authorsite"	=>	"https://github.com/SvePu",
-		"version"		=>	"1.0",
-		"codename"		=>	"mybbsmartlinks",
+		"version"	=>	"1.0",
+		"codename"	=>	"mybbsmartlinks",
 		"compatibility"	=>	"18*"
 		);
 }
