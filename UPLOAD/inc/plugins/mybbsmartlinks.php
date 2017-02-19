@@ -316,13 +316,13 @@ function mybbsmartlinks_admin()
 		$page->add_breadcrumb_item($lang->edit_smartlink);
 		$page->output_header($lang->smartlinks." - ".$lang->edit_smartlink);
 
-		$sub_tabs['editbadword'] = array(
+		$sub_tabs['editsmartlink'] = array(
 			'title' => $lang->edit_smartlink,
 			'description' => $lang->edit_smartlink_desc,
 			'link' => "index.php?module=config-mybbsmartlinks"
 		);
 
-		$page->output_nav_tabs($sub_tabs, "editbadword");
+		$page->output_nav_tabs($sub_tabs, "editsmartlink");
 
 		$form = new Form("index.php?module=config-mybbsmartlinks&amp;action=edit&amp;slid={$smartlink['slid']}", "post");
 
