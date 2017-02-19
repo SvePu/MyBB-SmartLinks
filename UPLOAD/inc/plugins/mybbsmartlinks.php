@@ -73,6 +73,7 @@ function mybbsmartlinks_install()
 			  `slid` int(10) unsigned NOT NULL AUTO_INCREMENT,
 			  `word` varchar(100) NOT NULL DEFAULT '',
 			  `url` varchar(200) NOT NULL DEFAULT '',
+			  `urltitle` varchar(100) NOT NULL DEFAULT '',
 			  `nofollow` tinyint(1) NOT NULL DEFAULT '0',
 			  `newtab` tinyint(1) NOT NULL DEFAULT '0',
 			  PRIMARY KEY (`slid`),
@@ -94,6 +95,7 @@ function mybbsmartlinks_is_installed()
 			'slid',
 			'word',
 			'url',
+			'urltitle',
 			'nofollow',
 			'newtab'
 			);
@@ -211,12 +213,36 @@ function mybbsmartlinks_admin()
 			{
 				$errors[] = $lang->error_smartlink_url_word_invalid;
 			}
+			
+			if($mybb->input['title_type'] == 2)
+			{
+				$title_checked[1] = '';
+				$title_checked[2] = "checked=\"checked\"";
+
+				if(!$mybb->input['urltitle'])
+				{
+					$errors[] = $lang->error_smartlink_url_title_empty;
+				}
+				
+				if(strlen(trim($mybb->input['urltitle'])) > 100)
+				{
+					$errors[] = $lang->smartlink_url_title_max;
+				}
+			}
+			else
+			{
+				$title_checked[1] = "checked=\"checked\"";
+				$title_checked[2] = '';
+
+				$mybb->input['urltitle'] = '';
+			}
 
 			if(!$errors)
 			{
 				$new_smartlink = array(
 					"word" => $db->escape_string($mybb->input['word']),
 					"url" => $db->escape_string($mybb->input['url']),
+					"urltitle" => $db->escape_string($mybb->input['urltitle']),
 					"nofollow" => $mybb->get_input('nofollow', MyBB::INPUT_INT),
 					"newtab" => $mybb->get_input('newtab', MyBB::INPUT_INT)
 				);
@@ -259,11 +285,52 @@ function mybbsmartlinks_admin()
 		{
 			$mybb->input['nofollow'] = '0';
 			$mybb->input['newtab'] = '0';
+			$title_checked[1] = "checked=\"checked\"";
+			$title_checked[2] = '';
+			$mybb->input['urltitle'] = '';
 		}
 
 		$form_container = new FormContainer($lang->add_smartlink);
 		$form_container->output_row($lang->smartlink." <em>*</em>", $lang->smartlink_desc, $form->generate_text_box('word', $mybb->input['word'], array('id' => 'word')), 'word');
 		$form_container->output_row($lang->smartlink_url." <em>*</em>", $lang->smartlink_url_desc, $form->generate_text_box('url', $mybb->input['url'], array('id' => 'url')), 'url');
+		$actions = "<script type=\"text/javascript\">
+	function checkAction(id)
+	{
+		var checked = '';
+
+		$('.'+id+'s_check').each(function(e, val)
+		{
+			if($(this).prop('checked') == true)
+			{
+				checked = $(this).val();
+			}
+		});
+		$('.'+id+'s').each(function(e)
+		{
+			$(this).hide();
+		});
+		if($('#'+id+'_'+checked))
+		{
+			$('#'+id+'_'+checked).show();
+		}
+	}
+</script>
+		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_notitle}</strong></label></dt>
+			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_yestitle}</strong></label></dt>
+			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
+				<table cellpadding=\"4\">
+					<tr>
+						<td><small>{$lang->forum_to_copy_to}</small></td>
+						<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
+					</tr>
+				</table>
+			</dd>
+		</dl>
+		<script type=\"text/javascript\">
+		checkAction('title');
+		</script>";
+		$form_container->output_row($lang->smartlink_url_title_addtitle, '', $actions);
 		$form_container->output_row($lang->smartlink_url_nofollow, '', $form->generate_yes_no_radio('nofollow', $mybb->input['nofollow'], array('style' => 'width: 2em;')));
 		$form_container->output_row($lang->smartlink_url_newtab, '', $form->generate_yes_no_radio('newtab', $mybb->input['newtab'], array('style' => 'width: 2em;')));
 		$form_container->end();
@@ -341,12 +408,36 @@ function mybbsmartlinks_admin()
 			{
 				$errors[] = $lang->smartlink_url_word_max;
 			}
+			
+			if($mybb->input['title_type'] == 2)
+			{
+				$title_checked[1] = '';
+				$title_checked[2] = "checked=\"checked\"";
+
+				if(!$mybb->input['urltitle'])
+				{
+					$errors[] = $lang->error_smartlink_url_title_empty;
+				}
+				
+				if(strlen(trim($mybb->input['urltitle'])) > 100)
+				{
+					$errors[] = $lang->smartlink_url_title_max;
+				}
+			}
+			else
+			{
+				$title_checked[1] = "checked=\"checked\"";
+				$title_checked[2] = '';
+
+				$mybb->input['urltitle'] = '';
+			}
 
 			if(!$errors)
 			{
 				$updated_smartlink = array(
 					"word" => $db->escape_string($mybb->input['word']),
 					"url" => $db->escape_string($mybb->input['url']),
+					"urltitle" => $db->escape_string($mybb->input['urltitle']),
 					"nofollow" => $mybb->get_input('nofollow', MyBB::INPUT_INT),
 					"newtab" => $mybb->get_input('newtab', MyBB::INPUT_INT)
 				);
@@ -395,11 +486,61 @@ function mybbsmartlinks_admin()
 		else
 		{
 			$smartlink_data = $smartlink;
+			if(!$smartlink['urltitle'])
+			{
+				$title_checked[1] = "checked=\"checked\"";
+				$title_checked[2] = '';
+			}
+			else
+			{
+				$title_checked[1] = '';
+				$title_checked[2] = "checked=\"checked\"";
+			}
+
+			$mybb->input['urltitle'] = $smartlink['urltitle'];
 		}
 
 		$form_container = new FormContainer($lang->edit_smartlink);
 		$form_container->output_row($lang->smartlink." <em>*</em>", $lang->smartlink_desc, $form->generate_text_box('word', $smartlink_data['word'], array('id' => 'word')), 'word');
 		$form_container->output_row($lang->smartlink_url, $lang->smartlink_url_desc, $form->generate_text_box('url', $smartlink_data['url'], array('id' => 'url')), 'url');
+		$actions = "<script type=\"text/javascript\">
+	function checkAction(id)
+	{
+		var checked = '';
+
+		$('.'+id+'s_check').each(function(e, val)
+		{
+			if($(this).prop('checked') == true)
+			{
+				checked = $(this).val();
+			}
+		});
+		$('.'+id+'s').each(function(e)
+		{
+			$(this).hide();
+		});
+		if($('#'+id+'_'+checked))
+		{
+			$('#'+id+'_'+checked).show();
+		}
+	}
+</script>
+		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_notitle}</strong></label></dt>
+			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_yestitle}</strong></label></dt>
+			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
+				<table cellpadding=\"4\">
+					<tr>
+						<td><small>{$lang->forum_to_copy_to}</small></td>
+						<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
+					</tr>
+				</table>
+			</dd>
+		</dl>
+		<script type=\"text/javascript\">
+		checkAction('title');
+		</script>";
+		$form_container->output_row($lang->smartlink_url_title_addtitle, '', $actions);
 		$form_container->output_row($lang->smartlink_url_nofollow, '', $form->generate_yes_no_radio('nofollow', $smartlink_data['nofollow'], array('style' => 'width: 2em;')));
 		$form_container->output_row($lang->smartlink_url_newtab, '', $form->generate_yes_no_radio('newtab', $smartlink_data['newtab'], array('style' => 'width: 2em;')));
 		$form_container->end();
@@ -429,11 +570,12 @@ function mybbsmartlinks_admin()
 		$page->output_nav_tabs($sub_tabs, "smartlinks");
 
 		$table = new Table;
-		$table->construct_header($lang->smartlink);
-		$table->construct_header($lang->smartlink_url, array("width" => "60%"));
-		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => 70));
-		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => 70));
-		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => 150));
+		$table->construct_header($lang->smartlink, array('width' => 250));
+		$table->construct_header($lang->smartlink_url, array('width' => 600));
+		$table->construct_header($lang->smartlink_title);
+		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => 100));
+		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => 100));
+		$table->construct_header($lang->controls, array('class' => 'align_center', 'width' => 100));
 
 		$query = $db->simple_select("smartlinks", "*", "", array("order_by" => "word", "order_dir" => "asc"));
 		while($smartlink = $db->fetch_array($query))
@@ -441,11 +583,18 @@ function mybbsmartlinks_admin()
 			$smartlink['word'] = htmlspecialchars_uni($smartlink['word']);
 			$smartlink['url'] = htmlspecialchars_uni($smartlink['url']);
 			
+			if(strlen($smartlink['url']) > 74)
+			{
+				$smartlink['url'] = substr_replace($smartlink['url'], '....', 35, strlen($smartlink['url'])-70);
+			}
+			
+			$url_title = !empty($smartlink['urltitle']) ? $smartlink['urltitle'] : $lang->smartlink_url_notitle;
 			$nofollow_status = $smartlink['nofollow'] == 1 ? $lang->yes : $lang->no;
 			$newtab_status = $smartlink['newtab'] == 1 ? $lang->yes : $lang->no;
 			
 			$table->construct_cell($smartlink['word']);
-			$table->construct_cell($smartlink['url']);
+			$table->construct_cell($smartlink['url'], array('style' => 'word-break: break-all;'));
+			$table->construct_cell($url_title, array('style' => 'word-break: break-all;'));
 			$table->construct_cell($nofollow_status, array('class' => 'align_center', 'width' => 50));
 			$table->construct_cell($newtab_status, array('class' => 'align_center', 'width' => 50));
 			$popup = new PopupMenu("smartlinks_{$smartlink['slid']}", $lang->options);
@@ -477,18 +626,19 @@ function mybbsmartlinks_parse_message($message)
 		reset($slcache);
 		foreach($slcache as $slid => $smartlink)
 		{		
+			$urltitle = $nofollow = '';
+			
 			if(!$smartlink['url'])
 			{
 				$smartlink['url'] = $mybb->settings['bburl'];
 			}
-			
+			if(!empty($smartlink['urltitle']))
+			{
+				$urltitle = ' title="'.htmlspecialchars_uni($smartlink['urltitle']).'"';
+			}			
 			if($smartlink['nofollow'] == 1)
 			{
 				$nofollow = ' rel="nofollow"';
-			}
-			else
-			{
-				$nofollow = '';
 			}
 			
 			if($smartlink['newtab'] == 1)
@@ -498,11 +648,11 @@ function mybbsmartlinks_parse_message($message)
 			else
 			{
 				$newtab = ' target="_self"';
-			}
+			}		
 			
 			$smartlink['word'] = str_replace('\*', '([a-zA-Z0-9_]{1})', preg_quote($smartlink['word'], "#"));
 			
-			$message = preg_replace("#(^|\W)".$smartlink['word']."(?=\W|$)#i", '\1<a href="'.$smartlink['url'].'"'.$nofollow.$newtab.'>'.trim($smartlink['word']).'</a>', $message);
+			$message = preg_replace("#(^|\W)".$smartlink['word']."(?=\W|$)#i", '\1<a href="'.$smartlink['url'].'"'.$nofollow.$newtab.$urltitle.'>'.trim($smartlink['word']).'</a>', $message);
 		}
 	}
 	return $message;
@@ -520,7 +670,7 @@ function mybbsmartlinks_cache($clear=false)
 	{
 		global $db;
 		$smartlinks = array();
-		$query = $db->simple_select('smartlinks','slid,word,url,nofollow,newtab');
+		$query = $db->simple_select('smartlinks','slid,word,url,urltitle,nofollow,newtab');
 		while($smartlink = $db->fetch_array($query))
 		{
 			$smartlinks[$smartlink['slid']] = $smartlink;

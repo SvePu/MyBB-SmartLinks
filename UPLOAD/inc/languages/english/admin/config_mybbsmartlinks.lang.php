@@ -1,7 +1,7 @@
 <?php
 /**
  * MyBB SmartLinks English Admin Language Pack
- * Copyright 2017 SvePu, All Rights Reserved
+ * Copyright 2017 MyBB Group, All Rights Reserved
  *
  */
 
@@ -21,9 +21,11 @@ $l['smartlink_filters_desc'] = "This feature allows you to manage a listing of w
 
 $l['smartlink'] = "Word";
 $l['smartlink_url'] = "URL";
+$l['smartlink_title'] = "URL Title";
 $l['smartlink_nofollow'] = "Nofollow";
 $l['smartlink_newtab'] = "New Tab";
 
+$l['smartlink_url_notitle'] = "none";
 $l['smartlink_edit_option'] = "Edit SmartLink";
 $l['smartlink_delete_option'] = "Delete SmartLink";
 
@@ -32,10 +34,16 @@ $l['smartlink_max'] = "The word can't be longer than 100 characters.";
 $l['smartlink_url_desc'] = "Enter the url which will added to the specified word.";
 $l['smartlink_url_invalid'] = "The url you entered is invalid!";
 $l['smartlink_url_word_max'] = "The length of url can't be longer than 200 characters!";
+$l['smartlink_url_title_max'] = "The url title can't be longer than 100 characters.";
+$l['smartlink_url_title_addtitle'] = "Set an url title?";
+$l['smartlink_url_title_notitle'] = "No";
+$l['smartlink_url_title_yestitle'] = "Yes, set a title.";
+
 $l['smartlink_url_nofollow'] = "Add nofollow to url?";
 $l['smartlink_url_newtab'] = "Open url in a new tab?";
 
 $l['error_smartlink_url_word_invalid'] = "The url cannot be equivalent to it's word!";
+$l['error_smartlink_url_title_empty'] = "You did not enter an url title!";
 
 $l['save_smartlink'] = "Save SmartLink";
 $l['no_smartlinks'] = "There are no smartlinks currently set at this time.";
