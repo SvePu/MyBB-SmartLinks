@@ -19,6 +19,7 @@ $l['edit_smartlink_desc'] = "Here you can edit the word and its url.";
 $l['smartlink_filters'] = "MyBB SmartLinks";
 $l['smartlink_filters_desc'] = "This feature allows you to manage a listing of words from forum posts which will automatically linked to desired url.";
 
+$l['smartlink_id'] = "ID";
 $l['smartlink'] = "Word";
 $l['smartlink_url'] = "URL";
 $l['smartlink_title'] = "URL Title";

@@ -570,8 +570,9 @@ function mybbsmartlinks_admin()
 		$page->output_nav_tabs($sub_tabs, "smartlinks");
 
 		$table = new Table;
+		$table->construct_header($lang->smartlink_id, array('class' => 'align_center', 'width' => '2%'));
 		$table->construct_header($lang->smartlink, array('width' => '25%'));
-		$table->construct_header($lang->smartlink_url, array('width' => '30%'));
+		$table->construct_header($lang->smartlink_url, array('width' => '28%'));
 		$table->construct_header($lang->smartlink_title, array('width' => '25%'));
 		$table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => '7%'));
 		$table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => '7%'));
@@ -592,6 +593,7 @@ function mybbsmartlinks_admin()
 			$nofollow_status = $smartlink['nofollow'] == 1 ? $lang->yes : $lang->no;
 			$newtab_status = $smartlink['newtab'] == 1 ? $lang->yes : $lang->no;
 			
+			$table->construct_cell($smartlink['slid'], array('class' => 'align_center'));
 			$table->construct_cell($smartlink['word']);
 			$table->construct_cell($smartlink['url'], array('style' => 'word-break: break-all;'));
 			$table->construct_cell($url_title, array('style' => 'word-break: break-all;'));
@@ -606,7 +608,7 @@ function mybbsmartlinks_admin()
 
 		if($table->num_rows() == 0)
 		{
-			$table->construct_cell($lang->no_smartlinks, array("colspan" => 6));
+			$table->construct_cell($lang->no_smartlinks, array("colspan" => 7));
 			$table->construct_row();
 		}
 
