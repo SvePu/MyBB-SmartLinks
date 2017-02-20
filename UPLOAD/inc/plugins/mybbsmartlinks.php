@@ -652,7 +652,7 @@ function mybbsmartlinks_parse_message($message)
 			
 			$smartlink['word'] = str_replace('\*', '([a-zA-Z0-9_]{1})', preg_quote($smartlink['word'], "#"));
 			
-			$message = preg_replace("#(^|\W)".$smartlink['word']."(?=\W|$)#i", '\1<a href="'.$smartlink['url'].'"'.$nofollow.$newtab.$urltitle.'>'.trim($smartlink['word']).'</a>', $message);
+			$message = preg_replace("#(^|\W)".$smartlink['word']."(?=\W|$)#i", '\1<a href="'.$smartlink['url'].'"'.$nofollow.$newtab.$urltitle.' class="smartlink_'.$smartlink['slid'].'">'.trim($smartlink['word']).'</a>', $message);
 		}
 	}
 	return $message;
