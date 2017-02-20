@@ -36,8 +36,7 @@ $l['smartlink_url_invalid'] = "The url you entered is invalid!";
 $l['smartlink_url_word_max'] = "The length of url can't be longer than 200 characters!";
 $l['smartlink_url_title_max'] = "The url title can't be longer than 100 characters.";
 $l['smartlink_url_title_addtitle'] = "Set an url title?";
-$l['smartlink_url_title_notitle'] = "No";
-$l['smartlink_url_title_yestitle'] = "Yes, set a title.";
+$l['smartlink_url_title'] = "Title:";
 
 $l['smartlink_url_nofollow'] = "Add nofollow to url?";
 $l['smartlink_url_newtab'] = "Open url in a new tab?";

@@ -316,12 +316,12 @@ function mybbsmartlinks_admin()
 	}
 </script>
 		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
-		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_notitle}</strong></label></dt>
-			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_yestitle}</strong></label></dt>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->no}</strong></label></dt>
+			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->yes}</strong></label></dt>
 			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
 				<table cellpadding=\"4\">
 					<tr>
-						<td><small>{$lang->forum_to_copy_to}</small></td>
+						<td><small>{$lang->smartlink_url_title}</small></td>
 						<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
 					</tr>
 				</table>
@@ -526,12 +526,12 @@ function mybbsmartlinks_admin()
 	}
 </script>
 		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
-		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_notitle}</strong></label></dt>
-			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->smartlink_url_title_yestitle}</strong></label></dt>
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->no}</strong></label></dt>
+			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->yes}</strong></label></dt>
 			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
 				<table cellpadding=\"4\">
 					<tr>
-						<td><small>{$lang->forum_to_copy_to}</small></td>
+						<td><small>{$lang->smartlink_url_title}</small></td>
 						<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
 					</tr>
 				</table>
