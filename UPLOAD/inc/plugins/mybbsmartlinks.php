@@ -46,7 +46,7 @@ function mybbsmartlinks_info()
 		"website"	=>	"https://github.com/SvePu/MyBB-SmartLinks",
 		"author"	=>	"SvePu",
 		"authorsite"	=>	"https://github.com/SvePu",
-		"version"	=>	"1.0",
+		"version"	=>	"1.1",
 		"codename"	=>	"mybbsmartlinks",
 		"compatibility"	=>	"18*"
 		);
