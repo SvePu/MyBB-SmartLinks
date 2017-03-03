@@ -34,7 +34,7 @@ if(defined('IN_ADMINCP'))
 }
 else
 {
-	$plugins->add_hook("parse_message", "mybbsmartlinks_parse_message");
+	$plugins->add_hook("parse_message_end", "mybbsmartlinks_parse_message");
 }
 
 function mybbsmartlinks_info()
@@ -687,7 +687,7 @@ function mybbsmartlinks_parse_message($message)
 
 			$ignore_tags = implode('|', array('code','pre','script','blockquote'));
 
-			$message = preg_replace("#(^|\W)(?<![\/>])(?=(?:(?:[^<]++|<(?!\/?(?:" . $ignore_tags . ")\b))*+)(?:<(?>" . $ignore_tags . ")\b|\z))" . $smartlink['word'] . "(?=\W|$)#i", '\1<a href="' . $smartlink['url'] . '"' . $nofollow . $newtab . $urltitle . ' class="smartlink_'.$smartlink['slid'].'">' . trim($smartlink['word']) . '</a>', $message);
+			$message = preg_replace("#<a.*?<\/a>(*SKIP)(*F)|(^|\W)(?<![\/>])(?=(?:(?:[^<]++|<(?!\/?(?:" . $ignore_tags . ")\b))*+)(?:<(?>" . $ignore_tags . ")\b|\z))" . $smartlink['word'] . "(?=\W|$)#i", '\1<a href="' . $smartlink['url'] . '"' . $nofollow . $newtab . $urltitle . ' class="smartlink_'.$smartlink['slid'].'">' . trim($smartlink['word']) . '</a>', $message);
 		}
 	}
 	return $message;
