@@ -29,6 +29,8 @@ if(defined('IN_ADMINCP'))
 	$plugins->add_hook('admin_config_menu','mybbsmartlinks_admin_menu');
 	$plugins->add_hook('admin_config_permissions','mybbsmartlinks_admin_permissions');
 	$plugins->add_hook('admin_load','mybbsmartlinks_admin');
+	$plugins->add_hook("admin_tools_cache_start", "mybbsmartlinks_tools_cache_rebuild");
+	$plugins->add_hook("admin_tools_cache_rebuild", "mybbsmartlinks_tools_cache_rebuild");
 }
 else
 {
@@ -39,14 +41,14 @@ function mybbsmartlinks_info()
 {
 	global $db, $lang;
 	$lang->load("config_mybbsmartlinks");
-	
+
 	return array(
 		"name"		=>	$db->escape_string($lang->mybbsmartlinks_info_name),
 		"description"	=>	$db->escape_string($lang->mybbsmartlinks_info_description),
 		"website"	=>	"https://github.com/SvePu/MyBB-SmartLinks",
 		"author"	=>	"SvePu",
 		"authorsite"	=>	"https://github.com/SvePu",
-		"version"	=>	"1.1",
+		"version"	=>	"1.2",
 		"codename"	=>	"mybbsmartlinks",
 		"compatibility"	=>	"18*"
 		);
@@ -54,30 +56,30 @@ function mybbsmartlinks_info()
 
 function mybbsmartlinks_activate()
 {
-	change_admin_permission('tools','mybbsmartlinks');
+	change_admin_permission('config','mybbsmartlinks');
 	mybbsmartlinks_cache();
 }
 
 function mybbsmartlinks_deactivate()
 {
-	change_admin_permission('tools','mybbsmartlinks',-1);
+	change_admin_permission('config','mybbsmartlinks',-1);
 	mybbsmartlinks_cache(true);
 }
 
 function mybbsmartlinks_install()
 {
-	global $db;	
+	global $db;
 	if($db->engine == 'mysql' || $db->engine == 'mysqli')
-	{	
+	{
 		$db->query("CREATE TABLE IF NOT EXISTS `".TABLE_PREFIX."smartlinks` (
-			  `slid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-			  `word` varchar(100) NOT NULL DEFAULT '',
-			  `url` varchar(200) NOT NULL DEFAULT '',
-			  `urltitle` varchar(100) NOT NULL DEFAULT '',
-			  `nofollow` tinyint(1) NOT NULL DEFAULT '0',
-			  `newtab` tinyint(1) NOT NULL DEFAULT '0',
-			  PRIMARY KEY (`slid`),
-			  UNIQUE KEY `slid` (`slid`)
+			`slid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+			`word` varchar(100) NOT NULL DEFAULT '',
+			`url` varchar(200) NOT NULL DEFAULT '',
+			`urltitle` varchar(100) NOT NULL DEFAULT '',
+			`nofollow` tinyint(1) NOT NULL DEFAULT '0',
+			`newtab` tinyint(1) NOT NULL DEFAULT '0',
+			PRIMARY KEY (`slid`),
+			UNIQUE KEY `slid` (`slid`)
 			) ENGINE=MyISAM".$db->build_create_table_collation());
 	}
 }
@@ -121,7 +123,7 @@ function mybbsmartlinks_uninstall()
 		$lang->load('config_mybbsmartlinks');
 		$page->output_confirm_action('index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=mybbsmartlinks', $lang->mybbsmartlinks_uninstall_message, $lang->mybbsmartlinks_uninstall);
 	}
-	
+
 	if(!isset($mybb->input['no']) && $db->table_exists('smartlinks'))
 	{
 		$db->drop_table('smartlinks');
@@ -169,29 +171,33 @@ function mybbsmartlinks_admin()
 		return false;
 	}
 	$info = mybbsmartlinks_info();
-	
+
 	$page->add_breadcrumb_item($lang->mybbsmartlinks_info_name, "index.php?module=config-mybbsmartlinks");
 
 	if($mybb->input['action'] == "add")
 	{
-		
+
 		if($mybb->request_method == "post")
 		{
-			if(!trim($mybb->input['word']))
+			$mybb->input['word'] = trim($mybb->input['word']);
+			$mybb->input['url'] = trim($mybb->input['url']);
+			$mybb->input['urltitle'] = trim($mybb->input['urltitle']);
+
+			if(!$mybb->input['word'])
 			{
 				$errors[] = $lang->error_missing_smartlink;
 			}
 
-			if(strlen(trim($mybb->input['word'])) > 100)
+			if(strlen($mybb->input['word']) > 100)
 			{
 				$errors[] = $lang->smartlink_max;
 			}
 
-			if(!preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $mybb->input['url']))
+			if(!preg_match('/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.)/i', $mybb->input['url']))
 			{
 				$errors[] = $lang->smartlink_url_invalid;
 			}
-			
+
 			if(strlen($mybb->input['url']) > 200)
 			{
 				$errors[] = $lang->smartlink_url_word_max;
@@ -213,7 +219,7 @@ function mybbsmartlinks_admin()
 			{
 				$errors[] = $lang->error_smartlink_url_word_invalid;
 			}
-			
+
 			if($mybb->input['title_type'] == 2)
 			{
 				$title_checked[1] = '';
@@ -223,8 +229,8 @@ function mybbsmartlinks_admin()
 				{
 					$errors[] = $lang->error_smartlink_url_title_empty;
 				}
-				
-				if(strlen(trim($mybb->input['urltitle'])) > 100)
+
+				if(strlen($mybb->input['urltitle']) > 100)
 				{
 					$errors[] = $lang->smartlink_url_title_max;
 				}
@@ -245,11 +251,10 @@ function mybbsmartlinks_admin()
 					"urltitle" => $db->escape_string($mybb->input['urltitle']),
 					"nofollow" => $mybb->get_input('nofollow', MyBB::INPUT_INT),
 					"newtab" => $mybb->get_input('newtab', MyBB::INPUT_INT)
-				);
+					);
 
 				$slid = $db->insert_query("smartlinks", $new_smartlink);
 
-				// Log admin action
 				log_admin_action($slid, $mybb->input['word'], $mybb->input['url']);
 
 				mybbsmartlinks_cache();
@@ -257,26 +262,26 @@ function mybbsmartlinks_admin()
 				admin_redirect("index.php?module=config-mybbsmartlinks");
 			}
 		}
-		
+
 		$page->add_breadcrumb_item($lang->add_smartlink);
 		$page->output_header($lang->smartlinks." - ".$lang->add_smartlink);
-		
+
 		$sub_tabs['smartlinks'] = array(
 			'title' => $lang->smartlink_filters,
 			'description' => $lang->smartlink_filters_desc,
 			'link' => "index.php?module=config-mybbsmartlinks"
-		);
-		
+			);
+
 		$sub_tabs['addsmartlink'] = array(
 			'title' => $lang->add_smartlink,
 			'description' => $lang->add_smartlink_desc,
 			'link' => "index.php?module=config-mybbsmartlinks&amp;action=add"
-		);
-		
+			);
+
 		$page->output_nav_tabs($sub_tabs, "addsmartlink");
-		
+
 		$form = new Form("index.php?module=config-mybbsmartlinks&amp;action=add", "post", "add");
-		
+
 		if($errors)
 		{
 			$page->output_inline_error($errors);
@@ -294,29 +299,29 @@ function mybbsmartlinks_admin()
 		$form_container->output_row($lang->smartlink." <em>*</em>", $lang->smartlink_desc, $form->generate_text_box('word', $mybb->input['word'], array('id' => 'word')), 'word');
 		$form_container->output_row($lang->smartlink_url." <em>*</em>", $lang->smartlink_url_desc, $form->generate_text_box('url', $mybb->input['url'], array('id' => 'url')), 'url');
 		$actions = "<script type=\"text/javascript\">
-	function checkAction(id)
-	{
-		var checked = '';
+		function checkAction(id)
+		{
+			var checked = '';
 
-		$('.'+id+'s_check').each(function(e, val)
-		{
-			if($(this).prop('checked') == true)
+			$('.'+id+'s_check').each(function(e, val)
 			{
-				checked = $(this).val();
+				if($(this).prop('checked') == true)
+				{
+					checked = $(this).val();
+				}
+			});
+			$('.'+id+'s').each(function(e)
+			{
+				$(this).hide();
+			});
+			if($('#'+id+'_'+checked))
+			{
+				$('#'+id+'_'+checked).show();
 			}
-		});
-		$('.'+id+'s').each(function(e)
-		{
-			$(this).hide();
-		});
-		if($('#'+id+'_'+checked))
-		{
-			$('#'+id+'_'+checked).show();
 		}
-	}
-</script>
+		</script>
 		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
-		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->no}</strong></label></dt>
+			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->no}</strong></label></dt>
 			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->yes}</strong></label></dt>
 			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
 				<table cellpadding=\"4\">
@@ -328,7 +333,7 @@ function mybbsmartlinks_admin()
 			</dd>
 		</dl>
 		<script type=\"text/javascript\">
-		checkAction('title');
+			checkAction('title');
 		</script>";
 		$form_container->output_row($lang->smartlink_url_title_addtitle, '', $actions);
 		$form_container->output_row($lang->smartlink_url_nofollow, '', $form->generate_yes_no_radio('nofollow', $mybb->input['nofollow'], array('style' => 'width: 2em;')));
@@ -338,8 +343,8 @@ function mybbsmartlinks_admin()
 		$form->output_submit_wrapper($buttons);
 		$form->end();
 
-		$page->output_footer();		
-		
+		$page->output_footer();
+
 	}
 
 	if($mybb->input['action'] == "delete")
@@ -347,7 +352,6 @@ function mybbsmartlinks_admin()
 		$query = $db->simple_select("smartlinks", "*", "slid='".$mybb->get_input('slid', MyBB::INPUT_INT)."'");
 		$smartlink = $db->fetch_array($query);
 
-		// Does the bad word not exist?
 		if(!$smartlink['slid'])
 		{
 			flash_message($lang->error_invalid_slid, 'error');
@@ -389,17 +393,21 @@ function mybbsmartlinks_admin()
 
 		if($mybb->request_method == "post")
 		{
-			if(!trim($mybb->input['word']))
+			$mybb->input['word'] = trim($mybb->input['word']);
+			$mybb->input['url'] = trim($mybb->input['url']);
+			$mybb->input['urltitle'] = trim($mybb->input['urltitle']);
+
+			if(!$mybb->input['word'])
 			{
 				$errors[] = $lang->error_missing_smartlink;
 			}
 
-			if(strlen(trim($mybb->input['word'])) > 100)
+			if(strlen($mybb->input['word']) > 100)
 			{
 				$errors[] = $lang->smartlink_max;
 			}
-			
-			if(!preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $mybb->input['url']))
+
+			if(!preg_match('/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|www\.)/i', $mybb->input['url']))
 			{
 				$errors[] = $lang->smartlink_url_invalid;
 			}
@@ -408,7 +416,14 @@ function mybbsmartlinks_admin()
 			{
 				$errors[] = $lang->smartlink_url_word_max;
 			}
-			
+
+			$word = str_replace('\*', '([a-zA-Z0-9_]{1})', preg_quote($mybb->input['word'], "#"));
+
+			if(strlen($mybb->input['word']) == strlen($mybb->input['url']) && preg_match("#(^|\W)".$word."(\W|$)#i", $mybb->input['url']))
+			{
+				$errors[] = $lang->error_smartlink_url_word_invalid;
+			}
+
 			if($mybb->input['title_type'] == 2)
 			{
 				$title_checked[1] = '';
@@ -418,8 +433,8 @@ function mybbsmartlinks_admin()
 				{
 					$errors[] = $lang->error_smartlink_url_title_empty;
 				}
-				
-				if(strlen(trim($mybb->input['urltitle'])) > 100)
+
+				if(strlen($mybb->input['urltitle']) > 100)
 				{
 					$errors[] = $lang->smartlink_url_title_max;
 				}
@@ -440,7 +455,7 @@ function mybbsmartlinks_admin()
 					"urltitle" => $db->escape_string($mybb->input['urltitle']),
 					"nofollow" => $mybb->get_input('nofollow', MyBB::INPUT_INT),
 					"newtab" => $mybb->get_input('newtab', MyBB::INPUT_INT)
-				);
+					);
 
 				$db->update_query("smartlinks", $updated_smartlink, "slid='{$smartlink['slid']}'");
 
@@ -455,24 +470,24 @@ function mybbsmartlinks_admin()
 
 		$page->add_breadcrumb_item($lang->edit_smartlink);
 		$page->output_header($lang->smartlinks." - ".$lang->edit_smartlink);
-		
+
 		$sub_tabs['smartlinks'] = array(
 			'title' => $lang->smartlink_filters,
 			'description' => $lang->smartlink_filters_desc,
 			'link' => "index.php?module=config-mybbsmartlinks"
-		);
-		
+			);
+
 		$sub_tabs['addsmartlink'] = array(
 			'title' => $lang->add_smartlink,
 			'description' => $lang->add_smartlink_desc,
 			'link' => "index.php?module=config-mybbsmartlinks&amp;action=add"
-		);
+			);
 
 		$sub_tabs['editsmartlink'] = array(
 			'title' => $lang->edit_smartlink,
 			'description' => $lang->edit_smartlink_desc,
 			'link' => "index.php?module=config-mybbsmartlinks&amp;action=edit&amp;slid={$smartlink['slid']}"
-		);
+			);
 
 		$page->output_nav_tabs($sub_tabs, "editsmartlink");
 
@@ -504,51 +519,51 @@ function mybbsmartlinks_admin()
 		$form_container->output_row($lang->smartlink." <em>*</em>", $lang->smartlink_desc, $form->generate_text_box('word', $smartlink_data['word'], array('id' => 'word')), 'word');
 		$form_container->output_row($lang->smartlink_url, $lang->smartlink_url_desc, $form->generate_text_box('url', $smartlink_data['url'], array('id' => 'url')), 'url');
 		$actions = "<script type=\"text/javascript\">
-	function checkAction(id)
-	{
-		var checked = '';
-
-		$('.'+id+'s_check').each(function(e, val)
+		function checkAction(id)
 		{
-			if($(this).prop('checked') == true)
+			var checked = '';
+
+			$('.'+id+'s_check').each(function(e, val)
 			{
-				checked = $(this).val();
+				if($(this).prop('checked') == true)
+				{
+					checked = $(this).val();
+				}
+			});
+			$('.'+id+'s').each(function(e)
+			{
+				$(this).hide();
+			});
+			if($('#'+id+'_'+checked))
+			{
+				$('#'+id+'_'+checked).show();
 			}
-		});
-		$('.'+id+'s').each(function(e)
-		{
-			$(this).hide();
-		});
-		if($('#'+id+'_'+checked))
-		{
-			$('#'+id+'_'+checked).show();
 		}
-	}
-</script>
-		<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
+	</script>
+	<dl style=\"margin-top: 0; margin-bottom: 0; width: 100%;\">
 		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"1\" {$title_checked[1]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->no}</strong></label></dt>
-			<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->yes}</strong></label></dt>
-			<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
-				<table cellpadding=\"4\">
-					<tr>
-						<td><small>{$lang->smartlink_url_title}</small></td>
-						<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
-					</tr>
-				</table>
-			</dd>
-		</dl>
-		<script type=\"text/javascript\">
+		<dt><label style=\"display: block;\"><input type=\"radio\" name=\"title_type\" value=\"2\" {$title_checked[2]} class=\"titles_check\" onclick=\"checkAction('title');\" style=\"vertical-align: middle;\" /> <strong>{$lang->yes}</strong></label></dt>
+		<dd style=\"margin-top: 4px;\" id=\"title_2\" class=\"titles\">
+			<table cellpadding=\"4\">
+				<tr>
+					<td><small>{$lang->smartlink_url_title}</small></td>
+					<td>".$form->generate_text_box('urltitle', $mybb->input['urltitle'])."</td>
+				</tr>
+			</table>
+		</dd>
+	</dl>
+	<script type=\"text/javascript\">
 		checkAction('title');
-		</script>";
-		$form_container->output_row($lang->smartlink_url_title_addtitle, '', $actions);
-		$form_container->output_row($lang->smartlink_url_nofollow, '', $form->generate_yes_no_radio('nofollow', $smartlink_data['nofollow'], array('style' => 'width: 2em;')));
-		$form_container->output_row($lang->smartlink_url_newtab, '', $form->generate_yes_no_radio('newtab', $smartlink_data['newtab'], array('style' => 'width: 2em;')));
-		$form_container->end();
-		$buttons[] = $form->generate_submit_button($lang->save_smartlink);
-		$form->output_submit_wrapper($buttons);
-		$form->end();
+	</script>";
+	$form_container->output_row($lang->smartlink_url_title_addtitle, '', $actions);
+	$form_container->output_row($lang->smartlink_url_nofollow, '', $form->generate_yes_no_radio('nofollow', $smartlink_data['nofollow'], array('style' => 'width: 2em;')));
+	$form_container->output_row($lang->smartlink_url_newtab, '', $form->generate_yes_no_radio('newtab', $smartlink_data['newtab'], array('style' => 'width: 2em;')));
+	$form_container->end();
+	$buttons[] = $form->generate_submit_button($lang->save_smartlink);
+	$form->output_submit_wrapper($buttons);
+	$form->end();
 
-		$page->output_footer();
+	$page->output_footer();
 	}
 
 	if(!$mybb->input['action'])
@@ -559,13 +574,13 @@ function mybbsmartlinks_admin()
 			'title' => $lang->smartlink_filters,
 			'description' => $lang->smartlink_filters_desc,
 			'link' => "index.php?module=config-mybbsmartlinks"
-		);
-		
+			);
+
 		$sub_tabs['addsmartlink'] = array(
 			'title' => $lang->add_smartlink,
 			'description' => $lang->add_smartlink_desc,
 			'link' => "index.php?module=config-mybbsmartlinks&amp;action=add"
-		);
+			);
 
 		$page->output_nav_tabs($sub_tabs, "smartlinks");
 
@@ -583,16 +598,16 @@ function mybbsmartlinks_admin()
 		{
 			$smartlink['word'] = htmlspecialchars_uni($smartlink['word']);
 			$smartlink['url'] = htmlspecialchars_uni($smartlink['url']);
-			
+
 			if(strlen($smartlink['url']) > 74)
 			{
 				$smartlink['url'] = substr_replace($smartlink['url'], '....', 35, strlen($smartlink['url'])-70);
 			}
-			
+
 			$url_title = !empty($smartlink['urltitle']) ? $smartlink['urltitle'] : $lang->smartlink_url_notitle;
 			$nofollow_status = $smartlink['nofollow'] == 1 ? $lang->yes : $lang->no;
 			$newtab_status = $smartlink['newtab'] == 1 ? $lang->yes : $lang->no;
-			
+
 			$table->construct_cell($smartlink['slid'], array('class' => 'align_center'));
 			$table->construct_cell($smartlink['word']);
 			$table->construct_cell($smartlink['url'], array('style' => 'word-break: break-all;'));
@@ -613,36 +628,52 @@ function mybbsmartlinks_admin()
 		}
 
 		$table->output($lang->smartlink_filters);
-		
+
 		$page->output_footer();
 	}
+}
+
+function mybbsmartlinks_tools_cache_rebuild()
+{
+	global $cache;
+	class MybbSmartLinksCache extends datacache
+	{
+		function update_smartlinks()
+		{
+			mybbsmartlinks_cache();
+		}
+	}
+	$cache = null;
+	$cache = new MybbSmartLinksCache;
 }
 
 function mybbsmartlinks_parse_message($message)
 {
 	global $mybb, $cache;
 	$slcache = $cache->read('smartlinks');
-	
+
 	if(is_array($slcache))
 	{
 		reset($slcache);
 		foreach($slcache as $slid => $smartlink)
-		{		
+		{
 			$urltitle = $nofollow = '';
-			
-			if(!$smartlink['url'])
+
+			if(!preg_match('/^((http|https):\/\/)/i', $smartlink['url']))
 			{
-				$smartlink['url'] = $mybb->settings['bburl'];
+				$smartlink['url'] = 'http://'.$smartlink['url'];
 			}
+
 			if(!empty($smartlink['urltitle']))
 			{
-				$urltitle = ' title="'.htmlspecialchars_uni($smartlink['urltitle']).'"';
-			}			
+				$urltitle = ' title="' . htmlspecialchars_uni($smartlink['urltitle']) . '"';
+			}
+
 			if($smartlink['nofollow'] == 1)
 			{
 				$nofollow = ' rel="nofollow"';
 			}
-			
+
 			if($smartlink['newtab'] == 1)
 			{
 				$newtab = ' target="_blank"';
@@ -650,11 +681,13 @@ function mybbsmartlinks_parse_message($message)
 			else
 			{
 				$newtab = ' target="_self"';
-			}		
-			
+			}
+
 			$smartlink['word'] = str_replace('\*', '([a-zA-Z0-9_]{1})', preg_quote($smartlink['word'], "#"));
-			
-			$message = preg_replace("#(^|\W)".$smartlink['word']."(?=\W|$)#i", '\1<a href="'.$smartlink['url'].'"'.$nofollow.$newtab.$urltitle.' class="smartlink_'.$smartlink['slid'].'">'.trim($smartlink['word']).'</a>', $message);
+
+			$ignore_tags = implode('|', array('code','pre','script','blockquote'));
+
+			$message = preg_replace("#(^|\W)(?<![\/>])(?=(?:(?:[^<]++|<(?!\/?(?:" . $ignore_tags . ")\b))*+)(?:<(?>" . $ignore_tags . ")\b|\z))" . $smartlink['word'] . "(?=\W|$)#i", '\1<a href="' . $smartlink['url'] . '"' . $nofollow . $newtab . $urltitle . ' class="smartlink_'.$smartlink['slid'].'">' . trim($smartlink['word']) . '</a>', $message);
 		}
 	}
 	return $message;
@@ -665,8 +698,7 @@ function mybbsmartlinks_cache($clear=false)
 	global $cache;
 	if($clear==true)
 	{
-		global $db;
-		$db->delete_query('datacache', 'title="smartlinks"');
+		$cache->delete('smartlinks');
 	}
 	else
 	{
