@@ -48,7 +48,7 @@ function mybbsmartlinks_info()
 		"website"	=>	"https://github.com/SvePu/MyBB-SmartLinks",
 		"author"	=>	"SvePu",
 		"authorsite"	=>	"https://github.com/SvePu",
-		"version"	=>	"1.2",
+		"version"	=>	"1.3",
 		"codename"	=>	"mybbsmartlinks",
 		"compatibility"	=>	"18*"
 		);
@@ -186,6 +186,11 @@ function mybbsmartlinks_admin()
 			if(!$mybb->input['word'])
 			{
 				$errors[] = $lang->error_missing_smartlink;
+			}
+
+			if(preg_match('/\b(mybb)\b/i', $mybb->input['word']))
+			{
+				$errors[] = $lang->sprintf($lang->smartlink_word_invalid, $mybb->input['word']);
 			}
 
 			if(strlen($mybb->input['word']) > 100)
@@ -400,6 +405,11 @@ function mybbsmartlinks_admin()
 			if(!$mybb->input['word'])
 			{
 				$errors[] = $lang->error_missing_smartlink;
+			}
+
+			if(preg_match('/\b(mybb)\b/i', $mybb->input['word']))
+			{
+				$errors[] = $lang->sprintf($lang->smartlink_word_invalid, $mybb->input['word']);
 			}
 
 			if(strlen($mybb->input['word']) > 100)

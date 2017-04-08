@@ -32,6 +32,7 @@ $l['smartlink_delete_option'] = "Delete SmartLink";
 
 $l['smartlink_desc'] = "Enter the word which you wish to be linked.";
 $l['smartlink_max'] = "The word can't be longer than 100 characters.";
+$l['smartlink_word_invalid'] = "You can't use the word '{1}' as SmartLink";
 $l['smartlink_url_desc'] = "Enter the url which will added to the specified word.";
 $l['smartlink_url_invalid'] = "The url you entered is invalid!";
 $l['smartlink_url_word_max'] = "The length of url can't be longer than 200 characters!";
