@@ -69,18 +69,48 @@ function mybbsmartlinks_deactivate()
 function mybbsmartlinks_install()
 {
     global $db;
-    if ($db->engine == 'mysql' || $db->engine == 'mysqli')
+
+    /** Install DB Table */
+    $collation = $db->build_create_table_collation();
+
+    if (!$db->table_exists('smartlinks'))
     {
-        $db->query("CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "smartlinks` (
-            `slid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-            `word` varchar(100) NOT NULL DEFAULT '',
-            `url` varchar(200) NOT NULL DEFAULT '',
-            `urltitle` varchar(100) NOT NULL DEFAULT '',
-            `nofollow` tinyint(1) NOT NULL DEFAULT '0',
-            `newtab` tinyint(1) NOT NULL DEFAULT '0',
-            PRIMARY KEY (`slid`),
-            UNIQUE KEY `slid` (`slid`)
-            ) ENGINE=MyISAM" . $db->build_create_table_collation());
+        switch ($db->type)
+        {
+            case "pgsql":
+                $db->write_query("CREATE TABLE " . TABLE_PREFIX . "smartlinks (
+                    slid serial,
+                    word varchar(100) NOT NULL default '',
+                    url varchar(200) NOT NULL default '',
+                    urltitle varchar(100) NOT NULL default '',
+                    nofollow smallint NOT NULL default '0',
+                    newtab smallint NOT NULL default '0',
+                    PRIMARY KEY (slid)
+                );");
+                break;
+            case "sqlite":
+                $db->write_query("CREATE TABLE " . TABLE_PREFIX . "smartlinks (
+                    slid INTEGER PRIMARY KEY,
+                    word varchar(100) NOT NULL default '',
+                    url varchar(200) NOT NULL default '',
+                    urltitle varchar(100) NOT NULL default '',
+                    nofollow tinyint(1) NOT NULL default '0',
+                    newtab tinyint(1) NOT NULL default '0'
+                );");
+                break;
+            default:
+                $db->write_query("CREATE TABLE " . TABLE_PREFIX . "smartlinks (
+                    slid int(10) unsigned NOT NULL AUTO_INCREMENT,
+                    word varchar(100) NOT NULL DEFAULT '',
+                    url varchar(200) NOT NULL DEFAULT '',
+                    urltitle varchar(100) NOT NULL DEFAULT '',
+                    nofollow tinyint(1) NOT NULL DEFAULT '0',
+                    newtab tinyint(1) NOT NULL DEFAULT '0',
+                    PRIMARY KEY (slid),
+                    UNIQUE KEY slid (slid)
+                ) ENGINE=MyISAM{$collation};");
+                break;
+        }
     }
 }
 
