@@ -116,8 +116,8 @@ function mybbsmartlinks_install()
 
 function mybbsmartlinks_is_installed()
 {
-    global $mybb, $db;
-    $smcache = $db->simple_select('datacache', '*', 'title="smartlinks"');
+    global $db;
+    $smcache = $db->simple_select("datacache", "*", "title='smartlinks'");
     if ($db->num_rows($smcache) > 0 && $db->table_exists('smartlinks'))
     {
         $fields = $db->show_fields_from('smartlinks');
@@ -682,7 +682,7 @@ function mybbsmartlinks_tools_cache_rebuild()
 
 function mybbsmartlinks_parse_message($message)
 {
-    global $mybb, $cache;
+    global $cache;
     $slcache = $cache->read('smartlinks');
 
     if (is_array($slcache))
