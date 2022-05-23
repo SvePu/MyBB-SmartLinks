@@ -159,15 +159,14 @@ function mybbsmartlinks_uninstall()
     }
 }
 
-function mybbsmartlinks_admin_action($action)
+function mybbsmartlinks_admin_action(&$action)
 {
     $action['mybbsmartlinks'] = array(
         'active' => 'mybbsmartlinks'
     );
-    return $action;
 }
 
-function mybbsmartlinks_admin_menu($sub_menu)
+function mybbsmartlinks_admin_menu(&$sub_menu)
 {
     global $lang;
     $lang->load("config_mybbsmartlinks");
@@ -178,15 +177,13 @@ function mybbsmartlinks_admin_menu($sub_menu)
         'title'    =>    $lang->mybbsmartlinks_info_name,
         'link'    =>    'index.php?module=config-mybbsmartlinks'
     );
-    return $sub_menu;
 }
 
-function mybbsmartlinks_admin_permissions($admin_permissions)
+function mybbsmartlinks_admin_permissions(&$admin_permissions)
 {
     global $lang;
     $lang->load("config_mybbsmartlinks");
     $admin_permissions['mybbsmartlinks'] = $lang->mybbsmartlinks_can_manage_smartlinks;
-    return $admin_permissions;
 }
 
 function mybbsmartlinks_admin()
