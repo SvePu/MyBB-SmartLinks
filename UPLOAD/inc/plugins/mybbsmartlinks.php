@@ -600,16 +600,35 @@ function mybbsmartlinks_admin()
 
         $page->output_nav_tabs($sub_tabs, "smartlinks");
 
+        $query = $db->simple_select("smartlinks", "COUNT(slid) AS smartlinks");
+        $total_rows = $db->fetch_field($query, "smartlinks");
+
+        $pagenum = $mybb->get_input('page', MyBB::INPUT_INT);
+        if($pagenum)
+        {
+            $start = ($pagenum - 1) * 20;
+            $pages = ceil($total_rows / 20);
+            if($pagenum > $pages)
+            {
+                $start = 0;
+                $pagenum = 1;
+            }
+        }
+        else
+        {
+            $start = 0;
+            $pagenum = 1;
+        }
+
         $table = new Table;
-        $table->construct_header($lang->smartlink_id, array('class' => 'align_center', 'width' => '2%'));
-        $table->construct_header($lang->smartlink, array('width' => '25%'));
+        $table->construct_header($lang->smartlink, array('width' => '27%'));
         $table->construct_header($lang->smartlink_url, array('width' => '28%'));
         $table->construct_header($lang->smartlink_title, array('width' => '25%'));
         $table->construct_header($lang->smartlink_nofollow, array('class' => 'align_center', 'width' => '7%'));
         $table->construct_header($lang->smartlink_newtab, array('class' => 'align_center', 'width' => '7%'));
         $table->construct_header($lang->controls, array('class' => 'align_center', 'width' => '6%'));
 
-        $query = $db->simple_select("smartlinks", "*", "", array("order_by" => "word", "order_dir" => "asc"));
+        $query = $db->simple_select("smartlinks", "*", "", array('limit_start' => $start, 'limit' => 20, "order_by" => "word", "order_dir" => "asc"));
         while ($smartlink = $db->fetch_array($query))
         {
             $smartlink['word'] = htmlspecialchars_uni($smartlink['word']);
@@ -624,7 +643,6 @@ function mybbsmartlinks_admin()
             $nofollow_status = $smartlink['nofollow'] == 1 ? $lang->yes : $lang->no;
             $newtab_status = $smartlink['newtab'] == 1 ? $lang->yes : $lang->no;
 
-            $table->construct_cell($smartlink['slid'], array('class' => 'align_center'));
             $table->construct_cell($smartlink['word']);
             $table->construct_cell($smartlink['url'], array('style' => 'word-break: break-all;'));
             $table->construct_cell($url_title, array('style' => 'word-break: break-all;'));
@@ -644,6 +662,8 @@ function mybbsmartlinks_admin()
         }
 
         $table->output($lang->smartlink_filters);
+
+        echo "<br />".draw_admin_pagination($pagenum, "20", $total_rows, "index.php?module=config-mybbsmartlinks&amp;page={page}");
 
         $page->output_footer();
     }
