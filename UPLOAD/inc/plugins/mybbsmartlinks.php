@@ -48,7 +48,7 @@ function mybbsmartlinks_info()
         "website"       => "https://github.com/SvePu/MyBB-SmartLinks",
         "author"        => "SvePu",
         "authorsite"    => "https://github.com/SvePu",
-        "version"       => "1.4",
+        "version"       => "1.3",
         "codename"      => "mybbsmartlinks",
         "compatibility" => "18*"
     );
@@ -693,7 +693,7 @@ function mybbsmartlinks_parse_message($message)
         reset($slcache);
         foreach ($slcache as $slid => $smartlink)
         {
-            $urltitle = $nofollow = '';
+            $urlextras = '';
 
             if (!preg_match('/^((http|https):\/\/)/i', $smartlink['url']))
             {
@@ -702,28 +702,28 @@ function mybbsmartlinks_parse_message($message)
 
             if (!empty($smartlink['urltitle']))
             {
-                $urltitle = ' title="' . htmlspecialchars_uni($smartlink['urltitle']) . '"';
+                $urlextras .= ' title="' . htmlspecialchars_uni($smartlink['urltitle']) . '"';
             }
 
             if ($smartlink['nofollow'] == 1)
             {
-                $nofollow = ' rel="nofollow"';
+                $urlextras .= ' rel="nofollow"';
             }
 
             if ($smartlink['newtab'] == 1)
             {
-                $newtab = ' target="_blank"';
+                $urlextras .= ' target="_blank"';
             }
             else
             {
-                $newtab = ' target="_self"';
+                $urlextras .= ' target="_self"';
             }
 
             $smartlink['word'] = str_replace('\*', '([a-zA-Z0-9_]{1})', preg_quote($smartlink['word'], "#"));
 
             $ignore_tags = implode('|', array('code', 'pre', 'script', 'blockquote'));
 
-            $message = preg_replace("#<a.*?<\/a>(*SKIP)(*F)|(^|\W)(?<![\/>])(?=(?:(?:[^<]++|<(?!\/?(?:" . $ignore_tags . ")\b))*+)(?:<(?>" . $ignore_tags . ")\b|\z))" . $smartlink['word'] . "(?=\W|$)#i", '\1<a href="' . $smartlink['url'] . '"' . $nofollow . $newtab . $urltitle . ' class="smartlink_' . $smartlink['slid'] . '">' . trim($smartlink['word']) . '</a>', $message);
+            $message = preg_replace("#<a.*?<\/a>(*SKIP)(*F)|(^|\W)(?<![\/>])(?=(?:(?:[^<]++|<(?!\/?(?:" . $ignore_tags . ")\b))*+)(?:<(?>" . $ignore_tags . ")\b|\z))" . $smartlink['word'] . "(?=\W|$)#i", '\1<a href="' . $smartlink['url'] . '"' . $urlextras . ' class="smartlink_' . $smartlink['slid'] . '">' . trim($smartlink['word']) . '</a>', $message);
         }
     }
     return $message;
