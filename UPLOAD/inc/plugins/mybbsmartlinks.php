@@ -116,29 +116,10 @@ function mybbsmartlinks_install()
 
 function mybbsmartlinks_is_installed()
 {
-    global $db;
-    $smcache = $db->simple_select("datacache", "*", "title='smartlinks'");
-    if ($db->num_rows($smcache) > 0 && $db->table_exists('smartlinks'))
+    global $db, $cache;
+    if ($cache->size_of('smartlinks') > 0 && $db->table_exists('smartlinks'))
     {
-        $fields = $db->show_fields_from('smartlinks');
-        $list = array();
-        $check = array(
-            'slid',
-            'word',
-            'url',
-            'urltitle',
-            'nofollow',
-            'newtab'
-        );
-        foreach ($fields as $key => $val)
-        {
-            array_push($list, $val['Field']);
-        }
-        $diff = array_diff($check, $list);
-        if (empty($diff))
-        {
-            return true;
-        }
+        return true;
     }
     return false;
 }
@@ -157,6 +138,8 @@ function mybbsmartlinks_uninstall()
     {
         $db->drop_table('smartlinks');
     }
+
+    mybbsmartlinks_cache(true, true);
 }
 
 function mybbsmartlinks_admin_action(&$action)
@@ -726,12 +709,17 @@ function mybbsmartlinks_parse_message($message)
     return $message;
 }
 
-function mybbsmartlinks_cache($clear = false)
+function mybbsmartlinks_cache($clear = false, $remove = false)
 {
     global $cache;
     if ($clear == true)
     {
-        $cache->delete('smartlinks');
+        $cache->update('smartlinks', false);
+
+        if ($remove == true)
+        {
+            $cache->delete('smartlinks');
+        }
     }
     else
     {
